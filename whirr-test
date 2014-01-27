@@ -1,0 +1,6 @@
+#!/bin/bash
+#
+# Run Whirr integration tests
+
+mvn verify -Pintegration -DargLine="-Dwhirr.test.provider=aws-ec2 -Dwhirr.test.identity=$AWS_ACCESS_KEY_ID -Dwhirr.test.credential=$AWS_SECRET_ACCESS_KEY -Dconfig=.whirr-test.properties"
+
