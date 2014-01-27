@@ -1,0 +1,138 @@
+#!/bin/bash
+#
+# Run standard checks on Apache source release candidates.
+# http://incubator.apache.org/guides/releasemanagement.html#check-list
+#
+if [ "$#" -lt 2 ]; then
+  echo "Usage: verify-apache-source-dist dist-package-url keys-url [svn-tag | git-repo git-tag]"
+  echo "E.g.: verify-apache-source-dist http://people.apache.org/~abayer/whirr-0.8.2-candidate-0/whirr-0.8.2-src.tar.gz http://svn.apache.org/repos/asf/whirr/dist/KEYS git://git.apache.org/whirr.git release-0.8.2-rc0"
+  exit 1
+fi
+
+url=$1
+keys_url=$2
+
+file=$(basename $url)
+
+if [ -e $file ]; then
+  echo "Already downloaded $url"
+else
+  echo "Downloading $url"
+  curl --silent -O $url
+fi
+
+echo
+echo "Downloading $keys_url"
+curl --silent -O $keys_url
+
+echo
+echo "Checking signature"
+curl --silent -O $url.asc
+gpg --verify $file.asc
+
+# TODO: check that key used to sign is in KEYS
+# TODO: check that key used to sign is on public key server
+
+echo
+echo "Checking MD5"
+if curl -f --silent --head $url.md5 >/dev/null 2>&1; then
+  echo "Found $url.md5"
+  curl --silent -O $url.md5
+  cat $file.md5
+  echo "Actual MD5:"
+  md5 $file
+elif curl -f --silent --head $url.md5s >/dev/null 2>&1; then
+  echo "Found $url.md5s"
+  curl --silent -O $url.md5s
+  cat $file.md5s
+  echo "Actual MD5:"
+  md5 $file
+elif curl -f --silent --head $url.md5sum >/dev/null 2>&1; then
+  echo "Found $url.md5sum"
+  curl --silent $url.md5sum
+  cat $file.md5sum
+  echo "Actual MD5:"
+  md5 $file
+else
+  echo "Cannot find MD5 checksum"
+fi
+
+echo
+echo "Checking SHA1"
+if curl -f --silent --head $url.sha1 >/dev/null 2>&1; then
+  echo "Found $url.sha1"
+  curl --silent -O $url.sha1
+  cat $file.sha1
+  echo "Actual SHA1:"
+  shasum $file
+elif curl -f --silent --head $url.sha1s >/dev/null 2>&1; then
+  echo "Found $url.sha1s"
+  curl --silent -O $url.sha1s
+  cat $file.sha1s
+  echo "Actual SHA1:"
+  shasum $file
+elif curl -f --silent --head $url.sha1sum >/dev/null 2>&1; then
+  echo "Found $url.sha1sum"
+  curl --silent $url.sha1sum
+  cat $file.sha1sum
+  echo "Actual SHA1:"
+  shasum $file
+else
+  echo "Cannot find SHA1 checksum"
+fi
+
+echo
+echo "Unpacking $url"
+dir=$(tar tfz $file | sed -e 's@/.*@@' | uniq)
+rm -rf $dir
+tar zxf $file
+
+echo
+echo "Checking license headers"
+java -jar ~/dev/apache-rat-0.7/apache-rat-0.7.jar $dir > rat.txt
+echo "Please see rat.txt"
+echo
+echo "Checking for git files"
+find $dir -name .git
+  
+echo
+echo "Checking for svn files"
+find $dir -name .svn
+
+echo
+echo "Checking for class files"
+find $dir -name .class
+
+if [ "$#" -eq 3 ]; then
+  svn_tag=$3
+  echo
+  echo "Checking SVN source tag $svn_tag"
+  rm -rf svn-export
+  svn export $svn_tag svn-export >/dev/null 2>&1
+  diff <(cd svn-export; find . -not -empty) <(cd $dir; find . -not -empty) > file_diff.txt
+  echo 'Please see file_diff.txt. Lines starting with > indicate files in the archive but not tagged in source control (bad).'
+elif [ "$#" -eq 4 ]; then
+  git_repo=$3
+  git_tag=$4
+  echo
+  echo "Checking git source tag $git_repo $git_tag"
+  rm -rf git-export
+  git clone $git_repo git-export >/dev/null 2>&1
+  (cd git-export; git checkout $git_tag >/dev/null 2>&1; rm -rf .git)
+  diff <(cd git-export; find . -not -empty) <(cd $dir; find . -not -empty) > file_diff.txt
+  echo 'Please see file_diff.txt. Lines starting with > indicate files in the archive but not tagged in source control (bad).'
+fi
+
+echo 
+echo "Checking for existence of LICENSE, NOTICE, DISCLAIMER"
+ls $dir/{LICENSE*,NOTICE*,DISCLAIMER*}
+
+echo
+echo "The following JAR files are included:"
+find $dir -name '*.jar'
+
+echo
+echo "Please check the following manually:"
+echo "* Build from source"
+echo "* The documentation is readable"
+echo "* The contents of LICENSE, NOTICE, DISCLAIMER"
