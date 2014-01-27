@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Clean svn by reverting any local changes, including any files not committed,
+# and bring changes from repo
+svn revert -R .
+sa \? rm -rf
+svn up

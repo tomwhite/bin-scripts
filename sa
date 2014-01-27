@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Apply a command to svn files with a given status 
+
+APPLY=$1
+shift
+svn st | egrep "^\\${APPLY}[ ]+" | \
+  sed -e "s|^\\${APPLY}[ ]*||" | \
+  xargs -I{} "$@" '{}'

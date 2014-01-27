@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Backport a svn commit in an ASF repo
+
+REPO=https://svn.apache.org/repos/asf/$1/$2/trunk/       
+VERSION=$3
+PREVIOUS=$[$VERSION-1]
+svn merge --ignore-ancestry -r $PREVIOUS:$VERSION $REPO
+echo "Merge -r $PREVIOUS:$VERSION from trunk to branch. Fixes: "
