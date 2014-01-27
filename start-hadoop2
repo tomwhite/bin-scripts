@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Start a single-node Hadoop 2 cluster
+
+if [ ! -e bin/hadoop ]; then
+  echo Not in a Hadoop directory
+  exit 1
+fi
+kill-all-hadoop-processes
+cp ~/.hadoop/conf/* etc/hadoop
+export HADOOP_HOME=$(pwd)
+echo $HADOOP_HOME > ~/.hadoop/HADOOP_HOME
+rm -rf /tmp/hadoop-$USER
+bin/hadoop namenode -format
+sbin/start-dfs.sh
+sbin/start-yarn.sh
+sbin/mr-jobhistory-daemon.sh start historyserver
+sleep 2
+open http://localhost:8088

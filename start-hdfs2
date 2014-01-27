@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# Start a single-node Hadoop HDFS cluster
+
+if [ ! -e bin/hadoop ]; then
+  echo Not in a Hadoop directory
+  exit 1
+fi
+cp ~/.hadoop/conf/* etc/hadoop
+export HADOOP_HOME=$(pwd)
+echo $HADOOP_HOME > ~/.hadoop/HADOOP_HOME
+#rm -rf /tmp/hadoop-$USER
+bin/hadoop namenode -format
+sbin/start-dfs.sh
+sleep 2
+open http://localhost:50070

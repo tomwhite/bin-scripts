@@ -1,0 +1,5 @@
+#!/bin/bash
+#
+# Hadoop ant: run Hadoop build acript with useful options set
+
+ant -Djava5.home=$JAVA5_HOME -Dfindbugs.home=$FINDBUGS_HOME -Dforrest.home=$FORREST_HOME "$@"

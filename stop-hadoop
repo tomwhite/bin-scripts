@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Stop a single-node Hadoop cluster
+
+kill-all-hadoop-processes
+rm -f ~/.hadoop/HADOOP_HOME
+unset HADOOP_HOME

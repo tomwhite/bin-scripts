@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Start a single-node Hadoop cluster
+
+if [ ! -e bin/hadoop ]; then
+  echo Not in a Hadoop directory
+  exit 1
+fi
+kill-all-hadoop-processes
+cp ~/.hadoop/conf/* conf
+export HADOOP_HOME=$(pwd)
+echo $HADOOP_HOME > ~/.hadoop/HADOOP_HOME
+rm -rf /tmp/hadoop-$USER
+bin/hadoop namenode -format
+bin/start-dfs.sh
+bin/start-mapred.sh
+sleep 2
+open http://localhost:50030
