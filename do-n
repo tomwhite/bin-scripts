@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Run a command n times and report the number of failures
+
+failures=0
+i=0
+times=$1
+shift
+while [[ $i -lt $times ]]; do
+  $@
+  if [ $? -ne 0 ]; then failures=$((failures+1)); echo "Failed"; fi
+  i=$((i+1))
+done
+echo $failures "failures"
+

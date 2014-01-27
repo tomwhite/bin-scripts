@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# Run a command repeatedly until it fails
+
+rc=0
+while [ $rc == 0 ]
+do
+  $@
+  rc=$?
+done
+
