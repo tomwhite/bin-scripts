@@ -89,7 +89,7 @@ tar zxf $file
 
 echo
 echo "Checking license headers"
-java -jar ~/dev/apache-rat-0.7/apache-rat-0.7.jar $dir > rat.txt
+java -jar ~/sw/apache-rat-0.7/apache-rat-0.7.jar $dir > rat.txt
 echo "Please see rat.txt"
 echo
 echo "Checking for git files"
