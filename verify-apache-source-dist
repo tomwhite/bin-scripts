@@ -65,6 +65,12 @@ if curl -f --silent --head $url.sha1 >/dev/null 2>&1; then
   cat $file.sha1
   echo "Actual SHA1:"
   shasum $file
+elif curl -f --silent --head $url.sha >/dev/null 2>&1; then
+  echo "Found $url.sha"
+  curl --silent -O $url.sha
+  cat $file.sha
+  echo "Actual SHA1:"
+  shasum $file
 elif curl -f --silent --head $url.sha1s >/dev/null 2>&1; then
   echo "Found $url.sha1s"
   curl --silent -O $url.sha1s
